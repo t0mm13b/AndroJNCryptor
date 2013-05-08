@@ -7,7 +7,7 @@ This is a fork of the code found at https://code.google.com/p/jncryptor by dun..
 
 The code is modified to work on Android earlier than Gingerbread and compatible upwards, starting from Android SDK 7 with the aid of using SpongyCastle.
 
-The project is Eclipse compatible and compilable.
+The project is Eclipse compatible and compilable, the modified sources can be found within AndroJNCryptor directory, in which the earliest SDK is 7 (Eclair) right up to 17 (JellyBean)
 
 The following libraries are required:
 
