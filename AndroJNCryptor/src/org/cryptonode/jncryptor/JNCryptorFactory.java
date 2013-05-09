@@ -26,8 +26,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 /**
  * Factory used to obtain {@link JNCryptor} instances. A different instance is
@@ -50,9 +49,6 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("deprecation")
 public class JNCryptorFactory {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(JNCryptorFactory.class);
-
   private static final SortedMap<Integer, JNCryptor> supportedVersions = new TreeMap<Integer, JNCryptor>();
 
   static {
@@ -61,15 +57,11 @@ public class JNCryptorFactory {
     // Load classes defined in properties file
     try {
     	InputStream in = new StringBufferInputStream("org.cryptonode.jncryptor.AES256v2Cryptor\n");
-      if (in == null) {
-        throw new IOException("Unable to read class list file.");
-      }
-
       try {
         List<String> listOfClasses = IOUtils.readLines(in);
         for (String className : listOfClasses) {
           Class.forName(className);
-          LOGGER.debug("Loaded class {}.", className);
+          JNCryptorLogger.LOGGER("Loaded class {}." + className);
         }
       } finally {
         in.close();
@@ -122,7 +114,7 @@ public class JNCryptorFactory {
     }
 
     supportedVersions.put(version, cryptor);
-    LOGGER.debug("Cryptor registered with support for version {}.", version);
+    JNCryptorLogger.LOGGER("Cryptor registered with support for version {}." + version);
   }
 
   /**

@@ -16,6 +16,8 @@
 package org.cryptonode.jncryptor;
 
 import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -75,26 +77,49 @@ import android.os.Build;
  */
 public class AES256v2Cryptor implements JNCryptor {
 
+	
+	
   private static final String AES_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
   private static final String HMAC_ALGORITHM = "HmacSHA256";
   private static final String AES_NAME = "AES";
   private static final String KEY_DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA1";
-  //private static final int PBKDF_ITERATIONS = 10000; 
-  // TOO SLOW ON ANDROID!
-  private static final int PBKDF_ITERATIONS = 1000;
+  private static final int PBKDF_ITERATIONS = 10000; 
+  //
   private static final int VERSION = 2;
   private static final int AES_256_KEY_SIZE = 256 / 8;
   private static final int AES_BLOCK_SIZE = 16;
+  //
+  // Default settings
+  private JNCryptorSettings mCryptorSettings = new JNCryptorSettings(PBKDF_ITERATIONS);
 
   // Salt length exposed as package private to aid unit testing
   static final int SALT_LENGTH = 8;
 
   // SecureRandom is threadsafe
-  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+  private static SecureRandom SECURE_RANDOM;
 
   static {
     // Register this class with the factory
     JNCryptorFactory.registerCryptor(VERSION, new AES256v2Cryptor());
+    // Bug fix for those on JB with change to Secure Random 
+    // (http://stackoverflow.com/questions/13383006/encryption-error-on-android-4-2)
+    if (Build.VERSION.SDK_INT >= 17)
+	    try {
+	      SECURE_RANDOM = SecureRandom.getInstance("SHA1PRNG", "Crypto");
+      } catch (NoSuchAlgorithmException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+      } catch (NoSuchProviderException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+      }
+    else
+	    try {
+	      SECURE_RANDOM = SecureRandom.getInstance("SHA1PRNG");
+      } catch (NoSuchAlgorithmException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+      }
   }
 
   /**
@@ -111,11 +136,11 @@ public class AES256v2Cryptor implements JNCryptor {
     Validate.notNull(salt, "Salt value cannot be null.");
     Validate.isTrue(salt.length == SALT_LENGTH, "Salt value must be %d bytes.",
         SALT_LENGTH);
-
+    JNCryptorLogger.LOGGER("keyForPassword: Settings: "+ this.mCryptorSettings.toString());
     try {
     	if (Build.VERSION.SDK_INT < 8){
     		PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator(new SHA1Digest());
-    		generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(password), salt, PBKDF_ITERATIONS);
+    		generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(password), salt, this.mCryptorSettings.getRounds());
     		KeyParameter key = (KeyParameter)generator.generateDerivedMacParameters(AES_256_KEY_SIZE * 8);
     		byte[] bKey = key.getKey();
     		return new SecretKeySpec(bKey, 0, bKey.length, AES_NAME);
@@ -123,7 +148,7 @@ public class AES256v2Cryptor implements JNCryptor {
 	      SecretKeyFactory factory = SecretKeyFactory
 	          .getInstance(KEY_DERIVATION_ALGORITHM);
 	      SecretKey tmp = factory.generateSecret(new PBEKeySpec(password, salt,
-	          PBKDF_ITERATIONS, AES_256_KEY_SIZE * 8));
+	      		this.mCryptorSettings.getRounds(), AES_256_KEY_SIZE * 8));
 	      return new SecretKeySpec(tmp.getEncoded(), AES_NAME);
     	}
     } catch (GeneralSecurityException e) {
@@ -191,6 +216,32 @@ public class AES256v2Cryptor implements JNCryptor {
       throw new CryptorException("Unable to parse ciphertext.", e);
     }
   }
+  
+  @Override
+  public byte[] decryptData(byte[] ciphertext, char[] password, JNCryptorSettings settings)
+      throws CryptorException {
+    Validate.notNull(ciphertext, "Ciphertext cannot be null.");
+
+    try {
+    	JNCryptorLogger.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
+    	this.mCryptorSettings = settings;
+    	JNCryptorLogger.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
+      AES256v2Ciphertext aesCiphertext = new AES256v2Ciphertext(ciphertext);
+
+      if (!aesCiphertext.isPasswordBased()) {
+        throw new IllegalArgumentException(
+            "Ciphertext was not encrypted with a password.");
+      }
+
+      SecretKey decryptionKey = keyForPassword(password,
+          aesCiphertext.getEncryptionSalt());
+      SecretKey hmacKey = keyForPassword(password, aesCiphertext.getHmacSalt());
+
+      return decryptData(aesCiphertext, decryptionKey, hmacKey);
+    } catch (InvalidDataException e) {
+      throw new CryptorException("Unable to parse ciphertext.", e);
+    }
+  }
 
   /**
    * Encrypts plaintext data, 256-bit AES CBC-mode with PKCS#5 padding.
@@ -239,6 +290,20 @@ public class AES256v2Cryptor implements JNCryptor {
       throws CryptorException {
     Validate.notNull(plaintext, "Plaintext cannot be null.");
 
+    byte[] encryptionSalt = getSecureRandomData(SALT_LENGTH);
+    byte[] hmacSalt = getSecureRandomData(SALT_LENGTH);
+    byte[] iv = getSecureRandomData(AES_BLOCK_SIZE);
+
+    return encryptData(plaintext, password, encryptionSalt, hmacSalt, iv);
+  }
+  
+  @Override
+  public byte[] encryptData(byte[] plaintext, char[] password, JNCryptorSettings settings)
+      throws CryptorException {
+    Validate.notNull(plaintext, "Plaintext cannot be null.");
+    JNCryptorLogger.LOGGER("encryptData: Settings: " + this.mCryptorSettings.toString());
+    this.mCryptorSettings = settings;
+    JNCryptorLogger.LOGGER("encryptData: Settings: " + this.mCryptorSettings.toString());
     byte[] encryptionSalt = getSecureRandomData(SALT_LENGTH);
     byte[] hmacSalt = getSecureRandomData(SALT_LENGTH);
     byte[] iv = getSecureRandomData(AES_BLOCK_SIZE);

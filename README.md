@@ -15,7 +15,9 @@ The following libraries are required:
  - commons-lang3-3.1.jar (http://commons.apache.org/proper/commons-lang/)
  - sc-light-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
  - scprov-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
- - slf4j-api-1.7.2.jar (https://code.google.com/p/jncryptor)
+ <s>- slf4j-api-1.7.2.jar (https://code.google.com/p/jncryptor) </s> 
+ 
+ Removed Defunct SLF4J Logger, and replaced with custom Logger class.
 
 # Motive
 
@@ -68,4 +70,4 @@ if (cipher != null){
 
 # Note
 
-Base64.java is taken from the AOSP source project.
+Base64.java is taken from the AOSP source project (found in frameworks/base/core/java/android/util).
