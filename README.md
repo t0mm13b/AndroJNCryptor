@@ -15,7 +15,7 @@ The following libraries are required:
  - commons-lang3-3.1.jar (http://commons.apache.org/proper/commons-lang/)
  - sc-light-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
  - scprov-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
- <s>- slf4j-api-1.7.2.jar (https://code.google.com/p/jncryptor) </s> 
+
  
  Removed Defunct SLF4J Logger, and replaced with custom Logger class.
 
@@ -29,11 +29,13 @@ To Encrypt:
 
 ```java
 JNCryptor crypt = JNCryptorFactory.getCryptor();
+JNCryptorSettings jnCryptSettings = new JNCryptorSettings(1000);
 byte[] cipher = null;
 try {
 	cipher = crypt.encryptData(
 		"If you can read this, then JNCryptor (Android SDK 7+/Eclair) has worked. The quick brown fox jumped over the lazy dog and ran away".getBytes(), 
-		"f00b4r".toCharArray());
+		"f00b4r".toCharArray(),
+		jnCryptSettings);
 } catch (CryptorException e) {
 	// TODO Auto-generated catch block
 	e.printStackTrace();
@@ -49,12 +51,13 @@ To Decrypt:
 
 ```java
 JNCryptor crypt = JNCryptorFactory.getCryptor();
+JNCryptorSettings jnCryptSettings = new JNCryptorSettings(1000);
 String jncryptdData = "AgHKqnNEbURnihKZ3ixaHeMH9LmOFcyE+RBPXKXSV0ur1VgD+hdyMIeVfB1c3qksK8DOMFkKNRbP1aClavcCTUlQVGC1xphb0hisTJBsBQM9ppmBJcRx7tVwg9Q4Z+tjMvM+M8wGAkyrK0EKDF1yKLKZlIwTAd8TES7LR8Ww1FfuxuBrZMQqio8F2rzFJ4Ekn/vsB7mDL8UpYhu9ocUNqtJpEiL1ReW2Z4fNBpoZkkdEgoMzb5AAU0Ci3yJf2mAsCug=";
 // Using Base64 utility help to encode the cipher-text!
 byte[] b = Base64.decode(jncryptdData, Base64.NO_WRAP);
 Log.d(TAG, "Encrypted+Base64'd via JNCryptor: " + jncryptdData);
 try {
-	cipher = crypt.decryptData(b, "f00b4r".toCharArray());
+	cipher = crypt.decryptData(b, "f00b4r".toCharArray(), jnCryptSettings);
 } catch (InvalidHMACException e) {
 	// TODO Auto-generated catch block
 	e.printStackTrace();
