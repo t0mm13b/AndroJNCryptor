@@ -11,14 +11,13 @@ The project is Eclipse compatible and compilable, the modified sources can be fo
 
 The following libraries are required:
 
- - commons-io-2.4.jar (http://commons.apache.org/proper/commons-io/)
- - commons-lang3-3.1.jar (http://commons.apache.org/proper/commons-lang/)
  - sc-light-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
  - scprov-jdk15on-1.47.02 (http://rtyley.github.io/spongycastle/)
 
  
  Removed Defunct SLF4J Logger, and replaced with custom Logger class.
-
+ Removed dependencies on commons-io-2.4.jar and commons-lang3-3.1.jar libraries
+ 
 # Motive
 
 To enable cross-encryption/decryption between Android and iPhone via way of RNCryptor (https://github.com/t0mm13b/RNCryptor) targetting iPhone iOS 4.2+ and also for supporting older Android versions.

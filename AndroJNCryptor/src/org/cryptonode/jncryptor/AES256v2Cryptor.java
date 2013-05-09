@@ -29,7 +29,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.lang3.Validate;
 import org.spongycastle.crypto.PBEParametersGenerator;
 import org.spongycastle.crypto.digests.SHA1Digest;
 import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
@@ -133,10 +132,9 @@ public class AES256v2Cryptor implements JNCryptor {
   public SecretKey keyForPassword(char[] password, byte[] salt)
       throws CryptorException {
 
-    Validate.notNull(salt, "Salt value cannot be null.");
-    Validate.isTrue(salt.length == SALT_LENGTH, "Salt value must be %d bytes.",
-        SALT_LENGTH);
-    JNCryptorLogger.LOGGER("keyForPassword: Settings: "+ this.mCryptorSettings.toString());
+  	if (salt == null) throw new IllegalArgumentException("Salt value cannot be null.");
+  	if (salt.length != SALT_LENGTH) 
+  		throw new IllegalArgumentException(String.format("Salt value must be %d bytes.", SALT_LENGTH));
     try {
     	if (Build.VERSION.SDK_INT < 8){
     		PKCS5S2ParametersGenerator generator = new PKCS5S2ParametersGenerator(new SHA1Digest());
@@ -197,8 +195,8 @@ public class AES256v2Cryptor implements JNCryptor {
   @Override
   public byte[] decryptData(byte[] ciphertext, char[] password)
       throws CryptorException {
-    Validate.notNull(ciphertext, "Ciphertext cannot be null.");
-
+  	if (ciphertext == null) throw new IllegalArgumentException("Ciphertext cannot be null.");
+ 
     try {
       AES256v2Ciphertext aesCiphertext = new AES256v2Ciphertext(ciphertext);
 
@@ -220,12 +218,12 @@ public class AES256v2Cryptor implements JNCryptor {
   @Override
   public byte[] decryptData(byte[] ciphertext, char[] password, JNCryptorSettings settings)
       throws CryptorException {
-    Validate.notNull(ciphertext, "Ciphertext cannot be null.");
+  	if (ciphertext == null) throw new IllegalArgumentException("Ciphertext cannot be null.");
 
     try {
-    	JNCryptorLogger.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
+    	//JNCryptorUtils.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
     	this.mCryptorSettings = settings;
-    	JNCryptorLogger.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
+    	//JNCryptorUtils.LOGGER("decryptData: Settings: " + this.mCryptorSettings.toString());
       AES256v2Ciphertext aesCiphertext = new AES256v2Ciphertext(ciphertext);
 
       if (!aesCiphertext.isPasswordBased()) {
@@ -288,7 +286,7 @@ public class AES256v2Cryptor implements JNCryptor {
   @Override
   public byte[] encryptData(byte[] plaintext, char[] password)
       throws CryptorException {
-    Validate.notNull(plaintext, "Plaintext cannot be null.");
+  	if (plaintext == null) throw new IllegalArgumentException("Plaintext cannot be null.");
 
     byte[] encryptionSalt = getSecureRandomData(SALT_LENGTH);
     byte[] hmacSalt = getSecureRandomData(SALT_LENGTH);
@@ -300,10 +298,9 @@ public class AES256v2Cryptor implements JNCryptor {
   @Override
   public byte[] encryptData(byte[] plaintext, char[] password, JNCryptorSettings settings)
       throws CryptorException {
-    Validate.notNull(plaintext, "Plaintext cannot be null.");
-    JNCryptorLogger.LOGGER("encryptData: Settings: " + this.mCryptorSettings.toString());
+    if (plaintext == null) throw new IllegalArgumentException("Plaintext cannot be null.");
+    
     this.mCryptorSettings = settings;
-    JNCryptorLogger.LOGGER("encryptData: Settings: " + this.mCryptorSettings.toString());
     byte[] encryptionSalt = getSecureRandomData(SALT_LENGTH);
     byte[] hmacSalt = getSecureRandomData(SALT_LENGTH);
     byte[] iv = getSecureRandomData(AES_BLOCK_SIZE);
@@ -332,11 +329,10 @@ public class AES256v2Cryptor implements JNCryptor {
   @Override
   public byte[] decryptData(byte[] ciphertext, SecretKey decryptionKey,
       SecretKey hmacKey) throws CryptorException, InvalidHMACException {
-
-    Validate.notNull(ciphertext, "Ciphertext cannot be null.");
-    Validate.notNull(decryptionKey, "Decryption key cannot be null.");
-    Validate.notNull(hmacKey, "HMAC key cannot be null.");
-
+  	if (ciphertext == null) throw new IllegalArgumentException("Ciphertext cannot be null.");
+  	if (decryptionKey == null) throw new IllegalArgumentException("Decryption key cannot be null.");
+  	if (hmacKey == null) throw new IllegalArgumentException("HMAC key cannot be null.");
+    
     AES256v2Ciphertext aesCiphertext;
     try {
       aesCiphertext = new AES256v2Ciphertext(ciphertext);
@@ -352,10 +348,10 @@ public class AES256v2Cryptor implements JNCryptor {
   public byte[] encryptData(byte[] plaintext, SecretKey encryptionKey,
       SecretKey hmacKey) throws CryptorException {
 
-    Validate.notNull(plaintext, "Plaintext cannot be null.");
-    Validate.notNull(encryptionKey, "Encryption key cannot be null.");
-    Validate.notNull(hmacKey, "HMAC key cannot be null.");
-
+  	if (plaintext == null) throw new IllegalArgumentException("Plaintext cannot be null.");
+  	if (encryptionKey == null) throw new IllegalArgumentException("Encryption key cannot be null.");
+  	if (hmacKey == null) throw new IllegalArgumentException("HMAC key cannot be null.");
+    
     byte[] iv = getSecureRandomData(AES_BLOCK_SIZE);
 
     try {

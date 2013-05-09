@@ -17,11 +17,6 @@ package org.cryptonode.jncryptor;
 
 import java.util.Arrays;
 
-import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import android.os.Build;
 
 /**
@@ -64,7 +59,7 @@ class AES256v2Ciphertext {
    *           if the data is not valid
    */
   AES256v2Ciphertext(byte[] data) throws InvalidDataException {
-    Validate.notNull(data, "Data cannot be null.");
+  	if (data == null) throw new IllegalArgumentException("Data cannot be null.");
 
     // Need the header to be able to determine the length
     if (data.length < HEADER_SIZE) {
@@ -326,13 +321,36 @@ class AES256v2Ciphertext {
 
   @Override
   public String toString() {
-    return ToStringBuilder.reflectionToString(this,
-        ToStringStyle.SHORT_PREFIX_STYLE);
+	  StringBuilder builder = new StringBuilder();
+	  builder.append("AES256v2Ciphertext [version=");
+	  builder.append(version);
+	  builder.append(", options=");
+	  builder.append(options);
+	  builder.append(", encryptionSalt=");
+	  builder.append(Arrays.toString(encryptionSalt));
+	  builder.append(", hmacSalt=");
+	  builder.append(Arrays.toString(hmacSalt));
+	  builder.append(", iv=");
+	  builder.append(Arrays.toString(iv));
+	  builder.append(", ciphertext=");
+	  builder.append(Arrays.toString(ciphertext));
+	  builder.append(", hmac=");
+	  builder.append(Arrays.toString(hmac));
+	  builder.append(", isPasswordBased=");
+	  builder.append(isPasswordBased);
+	  builder.append("]");
+	  return builder.toString();
   }
 
   @Override
   public boolean equals(Object obj) {
-    return EqualsBuilder.reflectionEquals(this, obj, false);
+  	if (obj == null) return false;
+  	if (!(obj instanceof AES256v2Ciphertext)) return false;
+  	AES256v2Ciphertext rhs = (AES256v2Ciphertext)obj;
+  	if (rhs != null){
+  			if (this == rhs) return true;
+  	}
+    return false;
   }
 
   /**

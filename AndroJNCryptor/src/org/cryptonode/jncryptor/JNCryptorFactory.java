@@ -15,17 +15,11 @@
 
 package org.cryptonode.jncryptor;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringBufferInputStream;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.Validate;
 
 
 /**
@@ -56,19 +50,17 @@ public class JNCryptorFactory {
 	  
     // Load classes defined in properties file
     try {
-    	InputStream in = new StringBufferInputStream("org.cryptonode.jncryptor.AES256v2Cryptor\n");
+    	String str = "org.cryptonode.jncryptor.AES256v2Cryptor\n";
       try {
-        List<String> listOfClasses = IOUtils.readLines(in);
+        List<String> listOfClasses = JNCryptorUtils.readLines(str);
         for (String className : listOfClasses) {
           Class.forName(className);
-          JNCryptorLogger.LOGGER("Loaded class {}." + className);
+          JNCryptorUtils.LOGGER("Loaded class {}." + className);
         }
       } finally {
-        in.close();
+        
       }
 
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
@@ -92,8 +84,8 @@ public class JNCryptorFactory {
    */
   public static JNCryptor getCryptorForCiphertext(byte[] ciphertext)
       throws ClassNotFoundException {
-    Validate.notNull(ciphertext, "Ciphertext cannot be null.");
-    Validate.isTrue(ciphertext.length > 0, "Ciphertext cannot be zero length.");
+  	if (ciphertext == null) throw new IllegalArgumentException("Ciphertext cannot be null.");
+  	if (ciphertext.length < 1) throw new IllegalArgumentException("Ciphertext cannot be zero length.");
 
     int version = ciphertext[0] & 0xFF; // Convert to unsigned int
     return getCryptor(version);
@@ -114,7 +106,7 @@ public class JNCryptorFactory {
     }
 
     supportedVersions.put(version, cryptor);
-    JNCryptorLogger.LOGGER("Cryptor registered with support for version {}." + version);
+    JNCryptorUtils.LOGGER("Cryptor registered with support for version {}." + version);
   }
 
   /**
