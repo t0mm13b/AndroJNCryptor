@@ -1,4 +1,4 @@
-package org.cryptonode.jncryptor;
+package t0mm13b.AndroJNCryptor;
 
 /**
  * Holder for settings to enable customization of encryption/decryption

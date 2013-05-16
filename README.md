@@ -1,4 +1,4 @@
-JNCryptor
+AndroJNCryptor
 =========
 
 JNCryptor for Android 

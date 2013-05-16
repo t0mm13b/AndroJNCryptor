@@ -1,4 +1,4 @@
-package org.cryptonode.jncryptor;
+package t0mm13b.AndroJNCryptor;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

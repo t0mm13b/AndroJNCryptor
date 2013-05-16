@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.cryptonode.jncryptor;
+package t0mm13b.AndroJNCryptor;
 
 /**
  * An {@code InvalidHMACException} is thrown when the HMAC value is incorrect,
