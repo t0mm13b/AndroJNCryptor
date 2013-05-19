@@ -50,7 +50,7 @@ public class JNCryptorFactory {
 	  
     // Load classes defined in properties file
     try {
-    	String str = "org.cryptonode.jncryptor.AES256v2Cryptor\n";
+    	String str = "t0mm13b.AndroJNCryptor.AES256v2Cryptor\n";
       try {
         List<String> listOfClasses = JNCryptorUtils.readLines(str);
         for (String className : listOfClasses) {
